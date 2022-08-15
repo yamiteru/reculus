@@ -1,6 +1,6 @@
 # Reculus
 
-### TODOs
+## TODOs
 [ ] - Draft system
 	[ ] - Stash
 	[ ] - Drop
@@ -10,6 +10,15 @@
 	[ ] - Pipe
 [ ] - Map / Validation
 [ ] - Make Value secure 
+[ ] - Batch
+
+## Ideas
+- Value constructors based on type (string, number, array, etc..) 
+	- Could have built-in validations
+	- Could create custom branded types
+- Access to the previous value 
+	- Could be useful for creating reactive history
+- Rename watch to effect?
 
 ## API
 
