@@ -11,6 +11,7 @@
 [ ] - Map / Validation
 [ ] - Make Value secure 
 [ ] - Batch
+[ ] - Disposal
 
 ## Ideas
 - Value constructors based on type (string, number, array, etc..) 
