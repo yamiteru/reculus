@@ -36,14 +36,14 @@ export function from<
 }
 
 export function pipe<
-	I extends Type[], 
-	T extends Type[], 
+	I extends Type[],
+	T extends Type[],
 	O = InferPipeOutput<T> | undefined,
 	F extends Lambda<Type, any>[] = Pipe<I, T, []>
 >(...fns: F) {
 	return (value: I) => {
 		let _ = value as any;
-	
+
 		for(let i = 0; i < fns.length; ++i) {
 			const tmp = (fns[i] as any)(_);
 
@@ -59,7 +59,7 @@ export function pipe<
 }
 
 export function filter<T extends Type>(predicate: Lambda<T, boolean>) {
-	return (value: InferType<T>) => predicate(value) 
+	return (value: InferType<T>) => predicate(value)
 		? value
 		: undefined;
 }
@@ -70,5 +70,3 @@ export function map<
 >(map: Lambda<I, Maybe<InferType<O>>>) {
 	return (value: I) => map(value);
 }
-
-

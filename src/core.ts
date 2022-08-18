@@ -2,29 +2,29 @@ import { Type, Behavior, InferType, Listener } from "./types";
 import { DATA, CACHE } from "./constants";
 
 export function get<
-	I extends Type, 
+	I extends Type,
 	O extends Type
 >($behavior: Behavior<I, O>) {
 	if(CACHE.reactiveUpdateListener) {
 		CACHE.mapDidInjectDependencies = true;
-		$behavior[DATA].listeners.add(CACHE.reactiveUpdateListener);		
+		$behavior[DATA].listeners.add(CACHE.reactiveUpdateListener);
 	}
-	
+
 	return $behavior[DATA].value;
 }
 
 export function set<
-	I extends Type, 
+	I extends Type,
 	O extends Type
 >(
 	$behavior: Behavior<I, O>,
-	nextValue: InferType<I> 
+	nextValue: InferType<I>
 ) {
 	const mappedValue = $behavior[DATA].map(nextValue);
 
 	if(mappedValue !== undefined) {
 		$behavior[DATA].value = mappedValue;
-		
+
 		for(const listener of $behavior[DATA].listeners.values()) {
 			listener();
 		}
@@ -36,11 +36,11 @@ export function set<
 }
 
 export function $<
-	I extends Type, 
+	I extends Type,
 	O extends Type
 >(
-	$behavior: Behavior<I, O>, 
-	nextValue?: InferType<I> 
+	$behavior: Behavior<I, O>,
+	nextValue?: InferType<I>
 ) {
 	return nextValue !== undefined
 		? set($behavior, nextValue)
@@ -54,4 +54,3 @@ export function effect(listener: Listener) {
 
 	CACHE.reactiveUpdateListener = null;
 }
-
