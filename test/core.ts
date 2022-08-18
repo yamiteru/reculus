@@ -1,7 +1,18 @@
 import { get, int, effect, $ } from '../src/index';
+import { DATA } from "../src/constants";
 
 describe('testing core functionality', () => {
+	describe('get', () => {
+		it('should return same value if called two times', () => {
+			const value = int(0);
+
+			expect(get(value)).toBe(0);
+			expect(get(value)).toBe(0);
+		});
+	});
+
 	describe('effect', () => {
+		// TODO: Here should probable be fixture.
 		it.each([
 			[0, [1, 2, 3]],
 			[5, [5, 8, 12, 52, 987]]
