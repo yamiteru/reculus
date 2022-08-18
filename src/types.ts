@@ -12,14 +12,14 @@ export type Cache = {
 };
 
 export type Behavior<
-	I extends Type, 
+	I extends Type,
 	O extends Type
 > = {
 	[DATA]: {
 		id: symbol;
 		value: O;
 		draft: Maybe<I>;
-		listeners: Set<Listener>;		
+		listeners: Set<Listener>;
 		map: Lambda<I, Maybe<InferType<O>>>;
 	}
 };
@@ -37,15 +37,15 @@ export type Pipe<
 	: T extends [infer Head]
 		? [...F, Lambda<I, Maybe<InferType<Head>>>]
 		: F;
-	
+
 export type InferPipeOutput<
 	T extends Type[]
 > = T extends [...infer _, infer O]
-	?	InferType<O> 
+	?	InferType<O>
 	: never;
 
 export type Type<
-	T = any, 
+	T = any,
 	N extends string = string
 > = T & { __type: N, __kind: T };
 

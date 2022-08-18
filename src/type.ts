@@ -4,11 +4,11 @@ import { defaultMap, throwError } from "./utils";
 import { set } from "./core";
 
 export function type<O extends Type>(
-	validation: (v: unknown) => boolean, 
+	validation: (v: unknown) => boolean,
 	error: (v: unknown) => string
 ) {
 	return <I extends Type = O>(
-		initialValue: InferType<O>, 
+		initialValue: InferType<O>,
 		map: Lambda<I, Maybe<InferType<O>>> = defaultMap
 	) => {
 		if(!validation(initialValue)) {
@@ -23,7 +23,7 @@ export function type<O extends Type>(
 				listeners: new Set(),
 				map: (value: I) => {
 					CACHE.mapDidInjectDependencies = false;
-					
+
 					const _ = map(value);
 
 					if(_ !== undefined && !validation(_)) {
@@ -34,13 +34,13 @@ export function type<O extends Type>(
 				}
 			}
 		};
-		
+
 		CACHE.reactiveUpdateListener = () => {
-			set($behavior, undefined as any);			
+			set($behavior, undefined as any);
 		};
-			
+
 		try {
-			const newValue = $behavior[DATA].map($behavior[DATA].value as any);	
+			const newValue = $behavior[DATA].map($behavior[DATA].value as any);
 
 			if(CACHE.mapDidInjectDependencies && newValue !== undefined) {
 				$behavior[DATA].value = newValue;
@@ -52,11 +52,9 @@ export function type<O extends Type>(
 				throw Error(message);
 			}
 		}
-		
+
 		CACHE.reactiveUpdateListener = null;
-		
+
 		return $behavior;
-	};			
+	};
 }
-
-

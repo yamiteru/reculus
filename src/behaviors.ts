@@ -4,12 +4,12 @@ import { type } from "./type";
 
 export const str = type<Str>(
 	(v) => typeof v === "string",
-	defaultError("str")	
+	defaultError("str")
 );
 
 export const char = type<Char>(
 	(v) => typeof v === "string",
-	defaultError("char")	
+	defaultError("char")
 );
 
 export const int = type<Int>(
