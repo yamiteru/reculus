@@ -43,19 +43,14 @@ number<T = number>(
 
 #### Types
 - Boolean
-	- bool
+	- `bool()`
 - Numerical
-	- number
-	- int
-	- float
--	Textual 
-	- str
-	- char
-- Array
-	- array
-	- tuple
-- Object
-	- object
+	- `number()`
+	- `int()`
+	- `float()`
+-Textual 
+	- `str`
+	- `char()`
 
 ## Reactivity
 
