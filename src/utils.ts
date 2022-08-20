@@ -1,11 +1,9 @@
-import { ERROR_PREFIX } from "./constants";
-import { Type, Behavior, InferType, InferPipeOutput, InferBehaviors, Lambda, Maybe, Pipe } from "./types";
+import { DATA, ERROR_PREFIX } from "./constants";
+import { Brand, Behavior, InferBehaviors, Lambda, Maybe, InferKind } from "./types";
 import { get } from "./core";
 
-export function defaultError(type: string) {
-	return (v: unknown) => {
-		return `value "${v}" of type "${typeof v}" is not assignable to ${type}`;
-	};
+export function defaultError(type: string, v: unknown) {
+	return `value "${v}" of type "${typeof v}" is not assignable to ${type}`;
 }
 
 export function defaultMap(value: any) {
@@ -17,12 +15,12 @@ export function throwError(error: string) {
 }
 
 export function from<
-	I extends Type[],
-	O,
+	I extends Brand[],
+	O extends Brand,
 	T extends Behavior<any, any>[] = InferBehaviors<I>
 >(
 	$behaviors: T,
-	map: Lambda<I, Maybe<InferType<O>>>
+	map: Lambda<I, Maybe<InferKind<O>>>
 ) {
 	return () => {
 		const values: I = [] as any;
@@ -35,40 +33,44 @@ export function from<
 	};
 }
 
-export function pipe<
-	I extends Type[], 
-	T extends Type[], 
-	O = InferPipeOutput<T> | undefined,
-	F extends Lambda<Type, any>[] = Pipe<I, T, []>
->(...fns: F) {
-	return (value: I) => {
-		let _ = value as any;
-	
-		for(let i = 0; i < fns.length; ++i) {
-			const tmp = (fns[i] as any)(_);
-
-			if(tmp === undefined) {
-				return undefined;
-			}
-
-			_ = tmp;
-		}
-
-		return _ as O;
-	};
-}
-
-export function filter<T extends Type>(predicate: Lambda<T, boolean>) {
-	return (value: InferType<T>) => predicate(value) 
+export function filter<
+	T extends Brand
+>(predicate: Lambda<InferKind<T>, boolean>) {
+	return (value: InferKind<T>) => predicate(value) 
 		? value
 		: undefined;
 }
 
 export function map<
-	I extends Type,
-	O extends Type
->(map: Lambda<I, Maybe<InferType<O>>>) {
-	return (value: I) => map(value);
+	I extends Brand,
+	O extends Brand = I
+>(map: Lambda<InferKind<I>, Maybe<InferKind<O>>>) {
+	return (value: InferKind<I>) => map(value);
 }
 
+export function tap<
+	T extends Brand
+>(fn: (value: T) => T) {
+	return (value: T) => {
+		fn(value);
+		return value;
+	};
+}
 
+// TODO: implement
+// on(count, "value", (value) => ...);
+// on(count, "dispose", () => ...);
+export function on<
+	I extends Brand,
+	O extends Brand
+>(
+	$behavior: Behavior<I, O>,
+	event: string,
+	handler: (value: unknown) => void
+) {
+	
+	
+	return () => {
+		// $behavior[DATA].listeners.delete(handler);
+	};
+}

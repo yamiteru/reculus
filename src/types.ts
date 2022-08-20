@@ -11,52 +11,95 @@ export type Cache = {
 	reactiveUpdateListener: Nullable<Listener>;
 };
 
+export type Validator<T> = (value: unknown) => asserts value is T;
+
+export type Brand<
+	T extends any = any, 
+	N extends string = string 
+> = { __type: T, __kind: N };
+
+export type InferType<
+	T extends Validator<any>
+> = T extends Validator<infer X>
+	? X
+	: never;
+
+export type InferKind<
+	T extends Brand<any, string>
+> = T extends Brand<infer X, infer _>
+	? X extends Record<any, Brand> | Brand[]
+		? InferKinds<X>
+		: X
+	: never;
+
+export type InferKinds<
+	T extends Record<any, Brand> | Brand[]
+> = T extends Record<any, Brand> 
+	? {
+		[K in keyof T]: InferKind<T[K]>;	
+	}
+	: T extends (infer X)[]
+		? X extends Brand 
+			? InferKind<X>[] 
+			: never
+		: never;
+
+export type TString = Brand<string, "str">;
+export type TChar = Brand<string, "char">;
+export type TNumber = Brand<number, "num">;
+export type TInt = Brand<number, "int">;
+export type TFloat = Brand<number, "float">;
+export type TBool = Brand<boolean, "bool">;
+export type TObject<
+	T extends Record<any, Brand>, 
+	N extends string
+> = Brand<T, N>;
+export type TArray<
+	T extends Brand[], 
+	N extends string
+> = Brand<T, N>;
+
+export type ValidatorObject<
+	T extends Record<any, Brand>
+> = {
+	[K in keyof T]: Validator<T[K]>;
+};
+
+export type InferObject<
+	T extends Record<any, Validator<any>>
+> = {
+	[K in keyof T]: T[K] extends Validator<infer X>
+		? X
+		: never;
+};
+
+export type BehaviorEvent =
+	| "value"
+	| "stash"
+	| "commit"
+	| "drop"
+	| "dispose";
+
 export type Behavior<
-	I extends Type, 
-	O extends Type
+	I extends Brand, 
+	O extends	Brand 
 > = {
 	[DATA]: {
 		id: symbol;
+		alive: boolean;
 		value: O;
 		draft: Maybe<I>;
-		listeners: Set<Listener>;		
-		map: Lambda<I, Maybe<InferType<O>>>;
+		listeners: {
+			value: Set<Listener>;		
+			stash: Set<(value: InferKind<I>) => void>;
+			drop: Set<() => void>;
+			commit: Set<() => void>;
+			dispose: Set<() => void>;
+		},
+		map: Lambda<InferKind<I>, Maybe<InferKind<O>>>;
 	}
 };
 
-export type InferBehaviors<T extends Type[]> = {
+export type InferBehaviors<T extends Brand[]> = {
 	[K in keyof T]: Behavior<any, T[K]>;
 };
-
-export type Pipe<
-	I extends Type,
-	T extends Type[],
-	F extends Lambda<any, any>[]
-> = T extends [infer Head, ...infer Tail]
-	? Pipe<Head, Tail, [...F, Lambda<I, Maybe<InferType<Head>>>]>
-	: T extends [infer Head]
-		? [...F, Lambda<I, Maybe<InferType<Head>>>]
-		: F;
-	
-export type InferPipeOutput<
-	T extends Type[]
-> = T extends [...infer _, infer O]
-	?	InferType<O> 
-	: never;
-
-export type Type<
-	T = any, 
-	N extends string = string
-> = T & { __type: N, __kind: T };
-
-export type Int = Type<number, "int">;
-export type Float = Type<number, "float">;
-export type Bool = Type<boolean, "bool">;
-export type Str = Type<string, "str">;
-export type Char = Type<string, "char">;
-
-export type InferType<
-	T extends Type<any, string>
-> = T extends Type<infer I, string>
-	?	I
-	: never;

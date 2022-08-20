@@ -1,38 +1,29 @@
-import { map, filter, int, $, effect, pipe, from, Int, Behavior } from "./src";
+import { effect, $, object, string, int, array, float, behavior, $int } from "./src";
 
-const doubleMap = map<Int, Int>((v) => v * 2);
+const gradesValidator = array(float);
 
-const divisibleByThreeFilter = filter<Int>(
-	(v) => v % 3 === 0
-);
-
-const extractFirstItemMap = map<Int[], Int>(
-	([value]) => value
-);
-
-const doubleDivisibleByThreePipe = pipe<[Int], [Int, Int, Int]>(
-	extractFirstItemMap,
-	doubleMap,
-	divisibleByThreeFilter
-);
-
-const doubleFrom = ($behavior: Behavior<any, Int>) => {
-	return from<[Int], Int>(
-		[$behavior],
-		doubleDivisibleByThreePipe	
-	);
-};
-
-const count = int(0);
-const double = int(0, doubleFrom(count));
-
-effect(() => {
-	console.log({
-		double1: $(double),
-		double2: $(double),
-	});
+const personValidator = object({
+	name: string,
+	age: int,
+	grades: gradesValidator
 });
 
-$(count, 1);
+const $person = behavior(personValidator);
+
+const count = $int(0);
+
+const me = $person({
+	name: "Yamiteru",
+	age: 25,
+	grades: [12.5] 
+});
+
+effect(() => {
+	console.log($(me));
+});
+
+effect(() => {
+	console.log($(count));
+});
+
 $(count, 2);
-$(count, 3);
