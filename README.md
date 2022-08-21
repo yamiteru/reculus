@@ -1,24 +1,5 @@
 # Reculus
 
-## TODOs
-[X] - Draft system
-	[X] - Stash
-	[X] - Drop
-	[X] - Commit
-[X] - Utility functions
-	[X] - Filter
-	[X] - Map
-	[X] - Pipe
-[X] - Map / Validation
-[X] - Make Value secure 
-[ ] - Previous IO values
-[ ] - Batch
-[ ] - Disposal
-
-## Ideas
-- `on` function to manually set subscriber
-- `cleanup` function in effects
-
 ## API
 ## Validation
 Since TypeScript gets compiled away so our TS types are always a lie we need a way to validate out data and assert their type. This is the only way we can be sure that out data types are correct. And since we get most of our data from 3rd party we always need to validate them either way so why not make it a core of the library.
