@@ -1,6 +1,11 @@
 import { DATA, ERROR_PREFIX } from "./constants";
-import { Brand, Behavior, InferBehaviors, Lambda, Maybe, InferKind } from "./types";
-import { get } from "./core";
+import {
+	Brand,
+	Behavior,
+	BehaviorEvent,
+	BehaviorEventMap,
+	InferHandlerValue,
+} from "./types";
 
 export function defaultError(type: string, v: unknown) {
 	return `value "${v}" of type "${typeof v}" is not assignable to ${type}`;
@@ -14,63 +19,36 @@ export function throwError(error: string) {
 	throw new Error(`${ERROR_PREFIX}: ${error}`);
 }
 
-export function from<
-	I extends Brand[],
+export function publish<
+	I extends Brand,
 	O extends Brand,
-	T extends Behavior<any, any>[] = InferBehaviors<I>
->(
-	$behaviors: T,
-	map: Lambda<I, Maybe<InferKind<O>>>
-) {
-	return () => {
-		const values: I = [] as any;
-
-		for(let i = 0; i < $behaviors.length; ++i) {
-			values.push(get($behaviors[i]));
-		}
-
-		return map(values);
-	};
-}
-
-export function filter<
-	T extends Brand
->(predicate: Lambda<InferKind<T>, boolean>) {
-	return (value: InferKind<T>) => predicate(value) 
-		? value
-		: undefined;
-}
-
-export function map<
-	I extends Brand,
-	O extends Brand = I
->(map: Lambda<InferKind<I>, Maybe<InferKind<O>>>) {
-	return (value: InferKind<I>) => map(value);
-}
-
-export function tap<
-	T extends Brand
->(fn: (value: T) => T) {
-	return (value: T) => {
-		fn(value);
-		return value;
-	};
-}
-
-// TODO: implement
-// on(count, "value", (value) => ...);
-// on(count, "dispose", () => ...);
-export function on<
-	I extends Brand,
-	O extends Brand
+	E extends BehaviorEvent
 >(
 	$behavior: Behavior<I, O>,
-	event: string,
-	handler: (value: unknown) => void
+	event: E,
+	value: InferHandlerValue<BehaviorEventMap<I, O>[E]>
 ) {
-	
-	
+	const set = $behavior[DATA].listeners[event];
+
+	if(set && set.size) {
+		for(const handler of set.values()) {
+			handler(value as any);
+		}
+	}
+}
+
+export function on<
+	I extends Brand,
+	O extends Brand,
+	E extends BehaviorEvent
+>(
+	$behavior: Behavior<I, O>,
+	event: E,
+	handler: BehaviorEventMap<I, O>[E]
+) {
+	$behavior[DATA].listeners[event].add(handler as any);
+
 	return () => {
-		// $behavior[DATA].listeners.delete(handler);
+		$behavior[DATA].listeners[event].delete(handler as any);
 	};
 }

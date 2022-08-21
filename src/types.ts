@@ -14,8 +14,8 @@ export type Cache = {
 export type Validator<T> = (value: unknown) => asserts value is T;
 
 export type Brand<
-	T extends any = any, 
-	N extends string = string 
+	T extends any = any,
+	N extends string = string
 > = { __type: T, __kind: N };
 
 export type InferType<
@@ -33,16 +33,18 @@ export type InferKind<
 	: never;
 
 export type InferKinds<
-	T extends Record<any, Brand> | Brand[]
-> = T extends Record<any, Brand> 
+	T extends Record<any, Brand> | Brand[] | Brand
+> = T extends Record<any, Brand>
 	? {
-		[K in keyof T]: InferKind<T[K]>;	
+		[K in keyof T]: InferKind<T[K]>;
 	}
 	: T extends (infer X)[]
-		? X extends Brand 
-			? InferKind<X>[] 
+		? X extends Brand
+			? InferKind<X>[]
 			: never
-		: never;
+		: T extends Brand
+			? InferKind<T>
+			: never;
 
 export type TString = Brand<string, "str">;
 export type TChar = Brand<string, "char">;
@@ -51,11 +53,11 @@ export type TInt = Brand<number, "int">;
 export type TFloat = Brand<number, "float">;
 export type TBool = Brand<boolean, "bool">;
 export type TObject<
-	T extends Record<any, Brand>, 
+	T extends Record<any, Brand>,
 	N extends string
 > = Brand<T, N>;
 export type TArray<
-	T extends Brand[], 
+	T extends Brand[],
 	N extends string
 > = Brand<T, N>;
 
@@ -80,23 +82,70 @@ export type BehaviorEvent =
 	| "drop"
 	| "dispose";
 
+export type BehaviorEventMap<
+	I extends Brand,
+	O extends Brand
+> = {
+	value: (value: O) => void;
+	stash: (value: I) => void;
+	commit: (value: undefined) => void;
+	drop: (value: undefined) => void;
+	dispose: (value: undefined) => void;
+};
+
+export type InferHandlerValue<
+	T extends ((value: any) => void)
+> = T extends ((value: infer X) => void)
+	? X
+	: never;
+
+export type Previous<
+	I extends Brand | Brand[] | Record<any, Brand>,
+	O extends Brand
+> = {
+	input: Maybe<InferKinds<I>>;
+	output: Maybe<InferKind<O>>;
+};
+
+export type State<
+	I extends Brand,
+	O extends Brand
+> = {
+	input: InferKind<I>;
+	previous: Previous<I, O>;
+};
+
+export type Map<
+	I extends Brand,
+	O extends Brand
+> = (
+	value: InferKind<I>,
+	state: State<I, O>
+) => Maybe<InferKind<O>>;
+
+export type Listeners<
+	I extends Brand,
+	O extends Brand
+> = {
+	value: Set<BehaviorEventMap<I, O>["value"]>;
+	stash: Set<BehaviorEventMap<I, O>["stash"]>;
+	drop: Set<BehaviorEventMap<I, O>["drop"]>;
+	commit: Set<BehaviorEventMap<I, O>["commit"]>;
+	dispose: Set<BehaviorEventMap<I, O>["dispose"]>;
+};
+
 export type Behavior<
-	I extends Brand, 
-	O extends	Brand 
+	I extends Brand,
+	O extends	Brand
 > = {
 	[DATA]: {
 		id: symbol;
 		alive: boolean;
+		previous: Previous<I, O>;
 		value: O;
 		draft: Maybe<I>;
-		listeners: {
-			value: Set<Listener>;		
-			stash: Set<(value: InferKind<I>) => void>;
-			drop: Set<() => void>;
-			commit: Set<() => void>;
-			dispose: Set<() => void>;
-		},
-		map: Lambda<InferKind<I>, Maybe<InferKind<O>>>;
+		listeners: Listeners<I, O>;
+		map: Map<I, O>;
 	}
 };
 
