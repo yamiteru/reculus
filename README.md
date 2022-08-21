@@ -48,7 +48,7 @@ number<T = number>(
 	- `number()`
 	- `int()`
 	- `float()`
--Textual 
+- Textual 
 	- `str`
 	- `char()`
 
