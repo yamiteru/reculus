@@ -1,4 +1,4 @@
 export * from "./factory";
-export * from "./asserts";
+export * from "./validations";
 export * from "./instances";
 export * from "./utils";

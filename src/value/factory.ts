@@ -1,5 +1,5 @@
-import {InferType, Type, Assert, Value, Map, defaultMap} from "../";
-import {DATA} from "../constants";
+import {InferType, Type, Assert, Value, Map, defaultMap, set} from "../";
+import {CACHE, DATA, ERROR_PREFIX} from "../constants";
 
 export function createValueInstance<
 	I extends Type,
@@ -43,11 +43,40 @@ export function value<
 		initialValue: InferType<I>,
 		map: Map<I, O> = defaultMap
 	): Value<I, O> => {
-		assert(initialValue);
-
-		return createValueInstance<I, O>(
-			initialValue,
+		const valueInstance = createValueInstance<I, O>(
+			assert(initialValue),
 			map
 		);
+
+		CACHE.reactiveUpdateListener = () => {
+			set(valueInstance, undefined as any);
+		};
+
+		try {
+			const {
+				map,
+				value
+			} = valueInstance[DATA];
+
+			const mappedValue = map(undefined as any, {
+				input: undefined,
+				previous: value.previous
+			});
+
+			if(CACHE.mapDidInjectDependencies && mappedValue !== undefined) {
+				value.current = mappedValue;
+			}
+		} catch(e: any) {
+			const message = e.message;
+
+			if(message && message.indexOf(ERROR_PREFIX) === 0) {
+				throw Error(message);
+			}
+		}
+
+		CACHE.reactiveUpdateListener = null;
+		CACHE.mapDidInjectDependencies = false;
+
+		return valueInstance;
 	};
 }

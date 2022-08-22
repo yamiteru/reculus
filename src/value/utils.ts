@@ -21,7 +21,7 @@ export function publish<
 	}
 }
 
-export function get<
+export function injectDependency<
 	I extends Type,
 	O extends Type
 >(
@@ -32,9 +32,19 @@ export function get<
 	if(CACHE.reactiveUpdateListener) {
 		_.event.value ??= new Set();
 		_.event.value.add(CACHE.reactiveUpdateListener);
-	}
 
-	return _.value.current;
+		CACHE.mapDidInjectDependencies = true;
+	}
+}
+
+export function get<
+	I extends Type,
+	O extends Type
+>(
+	valueInstance: Value<I, O>
+) {
+	injectDependency(valueInstance);
+	return valueInstance[DATA].value.current as InferType<O>;
 }
 
 export function set<
@@ -62,7 +72,19 @@ export function set<
 		return mappedValue;
 	}
 
-	return _.value.current;
+	return _.value.current as InferType<O>;
+}
+
+export function $<
+	I extends Type,
+	O extends Type
+>(
+	valueInstance: Value<I, O>,
+	newValue?: InferType<I>
+) {
+	return newValue !== undefined
+		? set(valueInstance, newValue)
+		: get(valueInstance);
 }
 
 export function effect(listener: Noop) {

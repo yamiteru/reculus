@@ -1,5 +1,5 @@
 import {error} from "./error";
-import {Assert, TChar, TFloat, TInt} from "../types";
+import {Assert, InferType, TChar, TFloat, TInt, Type} from "../types";
 
 export function assertType<T>(value: any, type: string): asserts value is T {
 	const valueType = typeof value;
@@ -27,16 +27,41 @@ export function assertChar(value: any): asserts value is TChar {
 	}
 }
 
-export function validate<T>(
+export function createValidation<
+	T extends Type
+>(assert: Assert<T>) {
+	return (
+		...checks: ((v: InferType<T>) => void)[]
+	): Assert<T> =>
+		(v) => {
+			assert(v);
+
+			for(const check of checks) {
+				check(v as InferType<T>);
+			}
+
+			return v as T;
+		};
+}
+
+export function validate<
+	T extends Type
+>(
 	assert: Assert<T>,
 	value: unknown
-) {
+): {
+	valid: true;
+	data: InferType<T>;
+	error: undefined;
+} | {
+	valid: false;
+	data: undefined;
+	error: string;
+} {
 	try {
-		assert(value);
-
 		return {
 			valid: true,
-			data: value,
+			data: assert(value) as InferType<T>,
 			error: undefined
 		};
 	} catch(e: any) {
