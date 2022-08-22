@@ -1,6 +1,5 @@
 import {error} from "./error";
-import {TChar, TFloat, TInt} from "../types";
-
+import {Assert, TChar, TFloat, TInt} from "../types";
 
 export function assertType<T>(value: any, type: string): asserts value is T {
 	const valueType = typeof value;
@@ -25,5 +24,26 @@ export function assertFloat(value: any): asserts value is TFloat {
 export function assertChar(value: any): asserts value is TChar {
 	if(value.length !== 0) {
 		error(`value "${value}" is not char`);
+	}
+}
+
+export function validate<T>(
+	assert: Assert<T>,
+	value: unknown
+) {
+	try {
+		assert(value);
+
+		return {
+			valid: true,
+			data: value,
+			error: undefined
+		};
+	} catch(e: any) {
+		return {
+			valid: false,
+			data: undefined,
+			error: e.message
+		};
 	}
 }
