@@ -1,6 +1,4 @@
-import {Object} from "./general";
-
-export type Assert<T> = (v: unknown) => T;
+import { Object } from "./general";
 
 export type Type<
 	T extends string = string,
@@ -10,17 +8,38 @@ export type Type<
 	__kind: K;
 };
 
-export type TString = Type<"string", string>;
-export type TChar = Type<"char", string>;
-export type TNumber = Type<"number", number>;
-export type TInt = Type<"int", number>;
-export type TFloat = Type<"float", number>;
-export type TBoolean = Type<"boolean", boolean>;
+export type Assert = (v: unknown) => void;
+
+export type Validation<
+	T extends Type
+> = (v: InferType<T>) => void;
+
+export type Check<
+	T extends Type
+> = (v: unknown) => T;
+
+export type TypeOf<
+	T extends Check<Type>
+> = T extends Check<infer X>
+	? X
+	: never;
+
+export type TString<
+	N extends string
+> = Type<`string:${N}`, string>;
+
+export type TNumber<
+	N extends string
+> = Type<`number:${N}`, number>;
+
+export type TBoolean<
+	N extends string
+> = Type<`boolean:${N}`, boolean>;
 
 export type TArray<
 	N extends string,
 	T extends Type
-> = Type<`array:${N}`, T>;
+> = Type<`array:${N}`, T[]>;
 
 export type TObject<
 	N extends string,
@@ -28,11 +47,15 @@ export type TObject<
 > = Type<`object:${N}`, T>;
 
 export type InferType<
-	T extends TArray<string, Type> | TObject<string, Object<Type>> | Type
-> = T extends TArray<any, infer X>
-	? InferType<X>[]
-	: T extends TObject<any, infer X>
-		? { [K in keyof X]: InferType<X[K]>; }
-		:	T extends Type<any, infer X>
-			? X
-			: never;
+	T extends Type | TArray<string, Type> | TObject<string, Object<Type>>
+> = T extends TArray<string, infer X>
+	? X extends Type
+		? InferType<X>[]
+		: X[]
+	:	T extends TObject<string, infer X>
+		? {
+			[K in keyof X]: InferType<X[K]>;
+		}
+		: T extends Type<string, infer X>
+		 ? X
+		 : never;

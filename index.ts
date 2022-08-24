@@ -1,23 +1,29 @@
-import {
-	$,
-	effect,
-	number,
-	object,
-	string,
-	value
-} from "./src";
+import { $, dispose, effect, number, subscribe, value } from "./src";
 
-const person = object({
-	name: string(),
-	age: number()
+const _count = number<"count">();
+const $count = value(_count);
+
+const count = $count(0);
+
+const doubleCount = $count(0, () => {
+	const c = $(count);
+
+	return c === undefined
+		? undefined
+		: c * 2;
 });
 
-const $person = value(person());
+effect(() => {
+	console.log($(doubleCount));
+});
 
-// const me = $person({} as any);
+subscribe(count, "dispose", () => {
+	console.log("Count has been disposed");
+});
 
-// effect(() => {
-// 	console.log($(me));
-// });
+$(count, 1);
+$(count, 2);
 
-// $(me, {} as any);
+dispose(count);
+
+$(count, 3);

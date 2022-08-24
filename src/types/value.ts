@@ -1,6 +1,6 @@
 import {DATA} from "../constants";
 import {InferType, Type} from "./validation";
-import {Maybe, Nullable} from "./general";
+import {Either, Maybe, Nullable} from "./general";
 
 export type Previous<
 	I extends Type,
@@ -39,13 +39,19 @@ export type EventSets<
 	);
 };
 
+export type EventHandler<
+	I extends Type,
+	O extends Type,
+	K extends keyof EventMap<any, any>
+> = (value: EventMap<I, O>[K]) => void;
+
 export type Map<
 	I extends Type,
 	O extends Type
 > = (
 	value: InferType<I>,
 	state: State<I, O>
-) => InferType<O>;
+) => Either<undefined, InferType<O>>;
 
 export type Value<
 	I extends Type,

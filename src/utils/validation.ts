@@ -1,54 +1,46 @@
-import {error} from "./error";
-import {Assert, InferType, TChar, TFloat, TInt, Type} from "../types";
+import { Assert, Check, InferType, Type, Validation } from "../types";
+import { error } from "./error";
 
-export function assertType<T>(value: any, type: string): asserts value is T {
-	const valueType = typeof value;
+export function assertType(type: string) {
+	return (v: unknown) => {
+		const valueType = typeof v;
 
-	if(valueType !== type) {
-		error(`value "${value}" of type "${valueType}" should be type "${type}"`);
+		if(valueType !== type) {
+			error(`value "${v}" of type "${valueType}" should be "${type}"`);
+		}
 	}
 }
 
-export function assertInt(value: any): asserts value is TInt {
-	if(!Number.isInteger(value)) {
-		error(`value "${value}" is not int`);
-	}
-}
-
-export function assertFloat(value: any): asserts value is TFloat {
-	if(Number.isInteger(value)) {
-		error(`value "${value}" is not float`);
-	}
-}
-
-export function assertChar(value: any): asserts value is TChar {
-	if(value.length !== 0) {
-		error(`value "${value}" is not char`);
-	}
+export function assertArray() {
+	return (v: unknown) => {
+		if(!Array.isArray(v)) {
+			error(`value "${v}" of type "${typeof v}" should be "array"`);
+		}
+	};
 }
 
 export function createValidation<
 	T extends Type
->(assert: Assert<T>) {
-	return (
-		...checks: ((v: InferType<T>) => void)[]
-	): Assert<T> =>
-		(v) => {
-			assert(v);
+>(
+	assert: Assert,
+	...validations: Validation<T>[]
+) {
+	return (v: unknown) => {
+		assert(v);
 
-			for(const check of checks) {
-				check(v as InferType<T>);
-			}
+		for(const validation of validations) {
+			validation(v as InferType<T>);
+		}
 
-			return v as T;
-		};
+		return v as T;
+	};
 }
 
 export function validate<
 	T extends Type
 >(
-	assert: Assert<T>,
-	value: unknown
+	type: Check<T>,
+	value: InferType<T>
 ): {
 	valid: true;
 	data: InferType<T>;
@@ -61,7 +53,7 @@ export function validate<
 	try {
 		return {
 			valid: true,
-			data: assert(value) as InferType<T>,
+			data: type(value) as InferType<T>,
 			error: undefined
 		};
 	} catch(e: any) {

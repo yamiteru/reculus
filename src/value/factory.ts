@@ -1,4 +1,4 @@
-import {InferType, Type, Assert, Value, Map, defaultMap, set} from "../";
+import {InferType, Type, Value, Map, defaultMap, set, Check} from "../";
 import {CACHE, DATA, ERROR_PREFIX} from "../constants";
 
 export function createValueInstance<
@@ -27,6 +27,7 @@ export function createValueInstance<
 				commit: null,
 				dispose: null
 			},
+			// TODO: add custom map with validation
 			map
 		}
 	};
@@ -35,7 +36,7 @@ export function createValueInstance<
 export function value<
 	O extends Type
 >(
-	assert: Assert<O>
+	type: Check<O>
 ) {
 	return <
 		I extends Type = O,
@@ -43,8 +44,10 @@ export function value<
 		initialValue: InferType<I>,
 		map: Map<I, O> = defaultMap
 	): Value<I, O> => {
+		type(initialValue);
+
 		const valueInstance = createValueInstance<I, O>(
-			assert(initialValue),
+			initialValue,
 			map
 		);
 
